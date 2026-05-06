@@ -34,25 +34,15 @@ def test_rerank_scores_and_sorts():
     assert ranked[0].score > ranked[1].score
 
 
-def test_rerank_time_decay_weighting():
+def test_rerank_max_similarity_scoring():
     corpus = make_sample_corpus(3)
     papers = [make_sample_paper(title="P")]
 
-    # Only similar to the oldest paper (index 2 after reverse-sort by date)
-    sim = np.array([[0.0, 0.0, 1.0]])
+    # Similar to only one corpus paper with score 0.7
+    sim = np.array([[0.7, 0.0, 0.0]])
     reranker = StubReranker(sim)
-    ranked_old = reranker.rerank(papers, corpus)
-    score_old = ranked_old[0].score
-
-    # Only similar to the newest paper (index 0 after reverse-sort by date)
-    papers2 = [make_sample_paper(title="P")]
-    sim2 = np.array([[1.0, 0.0, 0.0]])
-    reranker2 = StubReranker(sim2)
-    ranked_new = reranker2.rerank(papers2, corpus)
-    score_new = ranked_new[0].score
-
-    # Newest corpus paper gets higher time-decay weight, so score should be higher
-    assert score_new > score_old
+    ranked = reranker.rerank(papers, corpus)
+    assert ranked[0].score == pytest.approx(0.7)
 
 
 def test_rerank_single_candidate_single_corpus():
